@@ -1,0 +1,23 @@
+<Document>
+    <Input>
+        <Variable_1 VarName="purchase price" VariableType="number" Address="Control!$B$2" Rows="1" Cols="1"/>
+        <Variable_2 VarName="requested annuity" VariableType="number" Address="Control!$B$3" Rows="1" Cols="1"/>
+        <Variable_3 VarName="freq" VariableType="number" Address="Control!$B$4" Rows="1" Cols="1"/>
+        <Variable_4 VarName="advance flag" VariableType="number" Address="Control!$B$5" Rows="1" Cols="1"/>
+        <Variable_5 VarName="guarantee period" VariableType="number" Address="Control!$B$7" Rows="1" Cols="1"/>
+        <Variable_6 VarName="annuitant age" VariableType="number" Address="Control!$B$9" Rows="1" Cols="1"/>
+        <Variable_7 VarName="second age" VariableType="number" Address="Control!$B$10" Rows="1" Cols="1"/>
+        <Variable_8 VarName="sex" VariableType="number" Address="Control!$B$11" Rows="1" Cols="1"/>
+        <Variable_9 VarName="second sex" VariableType="number" Address="Control!$B$12" Rows="1" Cols="1"/>
+        <Variable_10 VarName="escalation method" VariableType="number" Address="Control!$B$14" Rows="1" Cols="1"/>
+        <Variable_11 VarName="escalation rate" VariableType="number" Address="Control!$B$15" Rows="1" Cols="1"/>
+        <Variable_12 VarName="spouse percent" VariableType="number" Address="Control!$B$16" Rows="1" Cols="1"/>
+        <Variable_13 VarName="tax relief flag" VariableType="number" Address="Control!$B$19" Rows="1" Cols="1"/>
+        <Variable_14 VarName="interest rate" VariableType="number" Address="Control!$B$22" Rows="1" Cols="1"/>
+        <Variable_15 VarName="annuity type" VariableType="number" Address="Control!$B$23" Rows="1" Cols="1"/>
+        <Variable_16 VarName="quote flag" VariableType="number" Address="Control!$B$24" Rows="1" Cols="1"/>
+    </Input>
+    <Output>
+        <Variable_1 VarName="result" VariableType="number" Address="Control!$K$7" Rows="1" Cols="1"/>
+    </Output>
+</Document>
