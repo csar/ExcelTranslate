@@ -19,5 +19,6 @@
     </Input>
     <Output>
         <Variable_1 VarName="result" VariableType="number" Address="Control!$K$7" Rows="1" Cols="1"/>
+        <Variable_2 VarName="netvalue" VariableType="number" Address="Control!$G$17" Rows="1" Cols="1"/>
     </Output>
 </Document>
