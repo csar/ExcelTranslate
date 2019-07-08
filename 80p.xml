@@ -1,0 +1,66 @@
+<Document>
+    <Input>
+    <Variable_1 VarName="Pension ceiling employed" VariableType="number" Address="inputs!$C$3" Rows="1" Cols="1"/>
+    <Variable_2 VarName="Min pension SE" VariableType="number" Address="inputs!$C$4" Rows="1" Cols="1"/>
+    <Variable_3 VarName="Max Pension SE" VariableType="number" Address="inputs!$C$5" Rows="1" Cols="1"/>
+    <Variable_4 VarName="perc est pens E" VariableType="number" Address="inputs!$C$6" Rows="1" Cols="1"/>
+    <Variable_5 VarName="perc est pens SE" VariableType="number" Address="inputs!$C$7" Rows="1" Cols="1"/>
+    <Variable_6 VarName="perc estimate profit" VariableType="number" Address="inputs!$C$8" Rows="1" Cols="1"/>
+    <Variable_7 VarName="max pension yrs" VariableType="number" Address="inputs!$C$9" Rows="1" Cols="1"/>
+    <Variable_8 VarName="max 80%" VariableType="number" Address="inputs!$C$10" Rows="1" Cols="1"/>
+    <Variable_9 VarName="max yrs service prev" VariableType="number" Address="inputs!$C$11" Rows="1" Cols="1"/>
+    <Variable_10 VarName="conversion factor" VariableType="number" Address="inputs!$C$12" Rows="1" Cols="1"/>
+    <Variable_11 VarName="date entry service" VariableType="date" Address="inputs!$C$16" Rows="1" Cols="1"/>
+    <Variable_12 VarName="end date saving" VariableType="date" Address="inputs!$C$18" Rows="1" Cols="1"/>
+    <Variable_13 VarName="fiscal salary" VariableType="number" Address="inputs!$C$20" Rows="1" Cols="1"/>
+    <Variable_14 VarName="mult employment flag" VariableType="number" Address="inputs!$C$21" Rows="1" Cols="1"/>
+    <Variable_15 VarName="fiscal salary other emp" VariableType="number" Address="inputs!$C$22" Rows="1" Cols="1"/>
+    <Variable_16 VarName="comm date employer" VariableType="date" Address="inputs!$C$24" Rows="1" Cols="1"/>
+    <Variable_17 VarName="calc from code" VariableType="number" Address="inputs!$C$26" Rows="1" Cols="1"/>
+    <Variable_18 VarName="calc date" VariableType="date" Address="inputs!$C$28" Rows="1" Cols="1"/>
+    <Variable_19 VarName="regularisation method" VariableType="number" Address="inputs!$C$29" Rows="1" Cols="1"/>
+    <Variable_20 VarName="other kbc capital active" VariableType="number" Address="inputs!$C$32" Rows="1" Cols="1"/>
+    <Variable_21 VarName="other kbc capital pup" VariableType="number" Address="inputs!$C$33" Rows="1" Cols="1"/>
+    <Variable_22 VarName="other kbc annuity active" VariableType="number" Address="inputs!$C$34" Rows="1" Cols="1"/>
+    <Variable_23 VarName="other kbc annuity pup" VariableType="number" Address="inputs!$C$35" Rows="1" Cols="1"/>
+    <Variable_24 VarName="overruling capital" VariableType="number" Address="inputs!$C$37" Rows="1" Cols="1"/>
+    <Variable_25 VarName="overruling capital active" VariableType="number" Address="inputs!$C$38" Rows="1" Cols="1"/>
+    <Variable_26 VarName="overruling capital pup" VariableType="number" Address="inputs!$C$39" Rows="1" Cols="1"/>
+    <Variable_27 VarName="overruling annuity" VariableType="number" Address="inputs!$C$40" Rows="1" Cols="1"/>
+    <Variable_28 VarName="overruling annuity active" VariableType="number" Address="inputs!$C$41" Rows="1" Cols="1"/>
+    <Variable_29 VarName="overruling annuity pup" VariableType="number" Address="inputs!$C$42" Rows="1" Cols="1"/>
+    <Variable_30 VarName="career" VariableType="number" Address="inputs!$E$4:$h$23" Rows="20" Cols="4"/>
+    <Variable_31 VarName="other non kbc capital active" VariableType="number" Address="Inputs!$J$29:$M$48" Rows="20" Cols="4"/>
+    <Variable_32 VarName="other non kbc capital pup" VariableType="number" Address="Inputs!$E$29:$H$48" Rows="20" Cols="4"/>
+    <Variable_33 VarName="other non kbc annuity active" VariableType="number" Address="Inputs!$J$55:$M$74" Rows="20" Cols="4"/>
+    <Variable_34 VarName="other non kbc annuity pup" VariableType="number" Address="Inputs!$E$55:$H$74" Rows="20" Cols="4"/>
+    <Variable_35 VarName="Tax back service" VariableType="number" Address="Inputs!$C$44" Rows="1" Cols="1"/>
+    <Variable_36 VarName="Admin chg back service" VariableType="number" Address="Inputs!$C$45" Rows="1" Cols="1"/>
+    <Variable_37 VarName="Comm chg back service" VariableType="number" Address="Inputs!$C$46" Rows="1" Cols="1"/>
+    <Variable_38 VarName="Int rate back service" VariableType="number" Address="Inputs!$C$47" Rows="1" Cols="1"/>
+    <Variable_39 VarName="75% allowed" VariableType="number" Address="Inputs!$C$49" Rows="1" Cols="1"/>
+    <Variable_40 VarName="Yearly prem saving" VariableType="number" Address="Inputs!$C$50" Rows="1" Cols="1"/>
+    <Variable_41 VarName="Request Type" VariableType="number" Address="Inputs!$C$52" Rows="1" Cols="1"/>
+    <Variable_42 VarName="Reserves" VariableType="number" Address="Inputs!$AC$4:$AG$43" Rows="40" Cols="5"/>
+    <Variable_43 VarName="Request Type2" VariableType="number" Address="Inputs!$C$53" Rows="1" Cols="1"/>
+    <Variable_44 VarName="array request type" VariableType="number" Address="Inputs!$C$54" Rows="1" Cols="1"/>
+    <Variable_45 VarName="Illustration" VariableType="number" Address="Inputs!$C$55" Rows="1" Cols="1"/>
+    <Variable_46 VarName="Requested BS" VariableType="number" Address="Inputs!$C$56" Rows="1" Cols="1"/>
+    <Variable_47 VarName="Manual calc flag" VariableType="number" Address="Inputs!$C$57" Rows="1" Cols="1"/>
+    <Variable_48 VarName="Manual amt" VariableType="number" Address="Inputs!$C$58" Rows="1" Cols="1"/>
+    <Variable_49 VarName="no 75 limit flag" VariableType="number" Address="Inputs!$C$59" Rows="1" Cols="1"/>
+    <Variable_50 VarName="fiscal opt regular cont" VariableType="number" Address="Inputs!$C$60" Rows="1" Cols="1"/>
+    <Variable_51 VarName="Rule" VariableType="number" Address="Inputs!$C$61" Rows="1" Cols="1"/>
+    <Variable_52 VarName="System date" VariableType="number" Address="Inputs!$C$62" Rows="1" Cols="1"/>
+    <Variable_53 VarName="Activity" VariableType="number" Address="Inputs!$C$63" Rows="1" Cols="1"/>
+    <Variable_54 VarName="Index rate salary" VariableType="number" Address="Inputs!$C$65" Rows="1" Cols="1"/>
+    <Variable_55 VarName="index rate ceiling" VariableType="number" Address="Inputs!$C$66" Rows="1" Cols="1"/>
+    <Variable_56 VarName="product indicator" VariableType="number" Address="Inputs!$C$67" Rows="1" Cols="1"/>
+    <Variable_57 VarName="EBI flag" VariableType="number" Address="Inputs!$C$69" Rows="1" Cols="1"/>
+    </Input>
+    <Output>
+    <Variable_1 VarName="Result1" VariableType="number" Address="Inputs!$C$73" Rows="1" Cols="1"/>
+    <Variable_2 VarName="Result2" VariableType="number" Address="Inputs!$C$74" Rows="1" Cols="1"/>
+    <Variable_3 VarName="output array" VariableType="number" Address="Inputs!$A$80:$C$114" Rows="35" Cols="3"/>
+    </Output>
+    </Document>

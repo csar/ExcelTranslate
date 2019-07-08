@@ -1,0 +1,24 @@
+<Document>
+    <Input>
+    <Variable_1 VarName="CoverNo" VariableType="number" Address="Input!$B$2" Rows="1" Cols="1"/>
+    <Variable_2 VarName="InsuredGender" VariableType="number" Address="Input!$B$3" Rows="1" Cols="1"/>
+    <Variable_3 VarName="InsuredTobacco" VariableType="number" Address="Input!$B$4" Rows="1" Cols="1"/>
+    <Variable_4 VarName="UWClass" VariableType="number" Address="Input!$B$5" Rows="1" Cols="1"/>
+    <Variable_5 VarName="IssueAge" VariableType="number" Address="Input!$B$7" Rows="1" Cols="1"/>
+    <Variable_6 VarName="Duration" VariableType="number" Address="Input!$B$8" Rows="1" Cols="1"/>
+    <Variable_7 VarName="Band" VariableType="number" Address="Input!$B$10" Rows="1" Cols="1"/>
+    <Variable_8 VarName="BenefitAmount" VariableType="number" Address="Input!$B$12" Rows="1" Cols="1"/>
+    <Variable_9 VarName="TableRate" VariableType="number" Address="Input!$B$15" Rows="1" Cols="1"/>
+    <Variable_10 VarName="PermFE" VariableType="number" Address="Input!$B$17" Rows="1" Cols="1"/>
+    <Variable_11 VarName="TempFE" VariableType="number" Address="Input!$B$18" Rows="1" Cols="1"/>
+    <Variable_12 VarName="TempFEDur" VariableType="number" Address="Input!$B$19" Rows="1" Cols="1"/>
+    <Variable_13 VarName="Waiver" VariableType="number" Address="Input!$B$20" Rows="1" Cols="1"/>
+    <Variable_14 VarName="WaiverSubstandard" VariableType="number" Address="Input!$B$21" Rows="1" Cols="1"/>
+    <Variable_15 VarName="MIGender" VariableType="number" Address="Input!$B$23" Rows="1" Cols="1"/>
+    <Variable_16 VarName="MIAgeatIssue" VariableType="number" Address="Input!$B$24" Rows="1" Cols="1"/>
+    <Variable_17 VarName="CalcType" VariableType="number" Address="Input!$B$27" Rows="1" Cols="1"/>
+    </Input>
+    <Output>
+    <Variable_1 VarName="ReturnValue" VariableType="number" Address="Input!$B$29" Rows="1" Cols="1"/>
+    </Output>
+    </Document>
