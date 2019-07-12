@@ -44,7 +44,7 @@ object LoadExcel extends App {
   }
   val wb = WorkbookFactory.create(new FileInputStream(arguments(CalcSheet)))
 
-  val io = BindingFactory()
+  val io = BindingFactory(wb)
   val InputOutput(input, output) = io
   val testdata = Try(WorkbookFactory.create(new FileInputStream(arguments(CaseFile))))
   val iterations = Try(arguments(Iterations).toInt).getOrElse(1) max 1

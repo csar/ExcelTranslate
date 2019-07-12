@@ -4,6 +4,7 @@ version := "0.1"
 
 scalaVersion := "2.13.0"
 
+libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2"
 // https://mvnrepository.com/artifact/org.apache.poi/poi-ooxml
 libraryDependencies += "org.apache.poi" % "poi-ooxml" % "4.1.0"
 
