@@ -50,7 +50,7 @@ class MessageHandler(timeout: Timeout, sheets:Config) extends Actor with ActorLo
          cmd match {
            case "iarr" =>
              ask(getOrCreate(sheet) ,Inputs)(timeout).mapTo[Seq[Variable]].map(marshallInputs).recover(errorString).pipeTo(sender())
-           case "0arr" =>
+           case "oarr" =>
              ask(getOrCreate(sheet) ,Outputs)(timeout).mapTo[Seq[Variable]].map(marshallInputs).recover(errorString).pipeTo(sender())
            case "calc" =>
              ask(getOrCreate(sheet) , Eval(params))(timeout).mapTo[Seq[Result]].map(marshallResults).recover(errorString).pipeTo(sender())
