@@ -11,7 +11,7 @@ import org.apache.poi.ss.util.{AreaReference, CellReference}
 
 import scala.collection.mutable.ListBuffer
 import scala.io.Source
-import scala.util.{Success, Try}
+import scala.util.{Success, Try, Using}
 import scala.util.control.NonFatal
 import scala.xml.{NodeSeq, XML}
 
@@ -84,23 +84,23 @@ object BindingFactory {
 
     InputOutput(input.toSeq, output.toSeq)
   }
-  def apply(wb:Workbook):InputOutput = {
+  def apply(wb:Workbook, fileName:String = arguments(CalcSheet),bindingXML:String = arguments(Binding)):InputOutput = {
 
      val formulaIO = wb.getSheet(FormulaIO)
-     val macros = new VBAMacroReader(new FileInputStream(arguments(CalcSheet)))
-     val bindings: Option[InputOutput] = if (formulaIO == null) Option(macros.readMacros().get("URS_VariableDefinition")).flatMap { text =>
-       Try {
+
+    val bindings: Try[InputOutput] = if (formulaIO == null) Using(new VBAMacroReader(new FileInputStream(fileName)))(_.readMacros().get("URS_VariableDefinition")) map { text =>
+
          val xml = Source.fromString(text).getLines().dropWhile(!_.contains("Document")).map(_ drop 1).filterNot(_.isEmpty).mkString("")
          val params = XML.loadString(xml)
          InputOutput(extractVariables(wb, params \ "Input"), extractVariables(wb, params \ "Output"))
-       }.toOption
+
      } else {
-       fromFormulaIO(formulaIO).toOption
+       fromFormulaIO(formulaIO)
      }
-     macros.close()
-     if (bindings.isEmpty) {
+
+     if (bindings.isFailure) {
        try {
-         val params = XML.loadFile(arguments(Binding))
+         val params = XML.loadFile(bindingXML)
          InputOutput(extractVariables(wb, params \ "Input"), extractVariables(wb, params \ "Output"))
        } catch {
          case NonFatal(e) =>
@@ -109,7 +109,7 @@ object BindingFactory {
        }
      } else {
        try {
-         val params = XML.loadFile(arguments(Binding))
+         val params = XML.loadFile(bindingXML)
          val custom = InputOutput(extractVariables(wb, params \ "Input"), extractVariables(wb, params \ "Output"))
          println("Using custom bindings instead of inner binding")
          custom

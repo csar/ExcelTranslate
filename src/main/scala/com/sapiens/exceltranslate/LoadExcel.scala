@@ -31,7 +31,7 @@ object LoadExcel extends App {
   import CellType._
 
   var arguments = Map(Args.CalcSheet -> args(0))
-  for (arg <- args) {
+  for (arg <- args.tail) {
     if (arg.endsWith(".xml")) arguments += Binding -> arg
     else {
       Try(arg.toInt) match {
