@@ -1,45 +1,61 @@
 package com.sapiens.exceltranslate
 
 import java.io.{File, FileInputStream}
+import java.util.concurrent.TimeUnit
 
-import akka.actor.{Actor, ActorLogging, ActorRef, Props, Stash, Status}
+import akka.actor.{Actor, ActorLogging, ActorRef, PoisonPill, Props, Stash, Status}
 import akka.util.Timeout
 import com.sapiens.exceltranslate.WorkerState.WorkerState
 import com.typesafe.config.Config
-import org.apache.poi.ss.usermodel.WorkbookFactory
+import org.apache.poi.ss.usermodel.{Workbook, WorkbookFactory}
 
 import scala.collection.mutable
+import scala.concurrent.duration.Duration
 import scala.concurrent.{Future, Promise, blocking}
 import scala.util.{Failure, Success, Try}
 
 trait Action
-case object Inputs extends Action
-case object Outputs extends Action
+trait Meta extends Action
+case object Inputs extends Meta
+case object Outputs extends Meta
 case class Eval(varString:String) extends Action
+case class Get(ref:String) extends Action
 
 case object Dequeue
+case object CheckRemove
 
-class WorkbookManager(timeout:Timeout, config: Config) extends Actor with ActorLogging  {
+class WorkbookManager(id:String, config: Config) extends Actor with ActorLogging  {
   implicit val ec = context.dispatcher
   var io :InputOutput=_
   var workers = Map.empty[ActorRef, WorkerState.WorkerState]
   val work = new mutable.Queue[(ActorRef,Action)]
   var metas = List.empty[(ActorRef,Action)]
 
+  val cancellable = context.system.scheduler.schedule(Duration(1, TimeUnit.MINUTES), Duration(Try(config.getDuration("keepAlive", TimeUnit.SECONDS) ) getOrElse 100,TimeUnit.SECONDS), self, CheckRemove )
+  override def postStop():Unit = {
+    cancellable.cancel()
+  }
 
+  def newWorkbook = Future {
+    blocking {
+      val file = config.getString("file")
+     WorkbookFactory.create(new FileInputStream(file))
+    }
+  }
+  def createInstance(wbf:Future[Workbook] = newWorkbook, output:Seq[Variable]=io.output):Unit = {
+    log.info(s"Creating WorkbookInstance $id")
+    workers += context.actorOf(Props(classOf[WorkbookInstance],id,  wbf, output)) -> WorkerState.New
+  }
   override def preStart(): Unit = {
-
-    Future {
-      blocking {
-        val file = config.getString("file")
-        val workbook = WorkbookFactory.create(new FileInputStream(file))
-        io = BindingFactory(workbook, file,"")
-        workers += context.actorOf(Props(classOf[WorkbookInstance],workbook, io.output)) -> WorkerState.New
+    // make the first Workbook instance to capture the IO definition
+    newWorkbook map { workbook=>
+        io = BindingFactory(workbook, config.getString("file"),"")
+        createInstance(Future successful workbook, io.output)
         for( (ref, action) <- metas.reverse) {
           self.tell(action,ref)
         }
         io
-      }
+
     } onComplete {
       case Success(io) =>
         context become ready(io).orElse(workermanagement)
@@ -58,13 +74,17 @@ class WorkbookManager(timeout:Timeout, config: Config) extends Actor with ActorL
     }
   }
 
+  val maxWorkers = Try(config.getInt("maxWorkers")) getOrElse 1
+  val creationDamping = Try(config.getDouble("creationDamping")) getOrElse 1.0
+  val keepMin = Try(config.getInt("keepMin")) getOrElse 1
   def ready(io:InputOutput): Receive = {
-    case Dequeue =>
+    case Dequeue if work.nonEmpty =>
+      val ready = workers.filter(_._2==WorkerState.Ready).keys.iterator
+      while(work.nonEmpty && ready.nonEmpty)
+      {
 
-      for( (worker, state) <- workers if state==WorkerState.Ready && work.nonEmpty) {
-        workers += worker-> WorkerState.Busy
         val (caller, action) = work.dequeue()
-        val call = action match {
+        val call = Try(action match {
           case Eval(params) =>
             val atoms = params.split('\u0000')
             var index = 1 //skip the size
@@ -76,16 +96,32 @@ class WorkbookManager(timeout:Timeout, config: Config) extends Actor with ActorL
               index+=arrSize
             }
             Calculate(binding)
+          case g:Get => g
+        })
+        call match {
+          case Success(call) =>
+            val worker = ready.next()
+            workers += worker-> WorkerState.Busy
+            worker.tell(call,caller)
+          case Failure(exception) =>
+            caller ! Status.Failure(exception)
         }
-
-        worker.tell(call,caller)
       }
+    // check here if we should create an instance
+    if(work.nonEmpty && workers.size<maxWorkers) {
+      val initializing = workers.values.filter(_==WorkerState.New).size * creationDamping
+      // no readies here
+      if (initializing<1)  {
+        createInstance()
+      } else  log.debug(s"Damped instance creation for $id")
 
+
+    }
     case Inputs =>
       sender() ! io.input
     case Outputs =>
       sender() ! io.output
-    case e:Eval =>
+    case e:Action =>
       work enqueue Tuple2(sender(),e)
       self ! Dequeue
   }
@@ -99,24 +135,41 @@ class WorkbookManager(timeout:Timeout, config: Config) extends Actor with ActorL
       for( (ref,cmd) <- metas) self.tell(cmd,ref)
       self ! Dequeue
   }
+
+
+
   def workermanagement:Receive = {
+    case CheckRemove if workers.size>work.size && workers.size> keepMin=>
+      workers.find(_._2==WorkerState.New) match {
+        case Some((ref,_)) =>
+          log.info(s"Termination new instance $id")
+          ref ! PoisonPill
+          workers -= ref
+        case None =>
+          workers.find(_._2==WorkerState.Ready).map(_._1) foreach { ref =>
+            log.info(s"Termination ready instance $id")
+            ref ! PoisonPill
+            workers -= ref
+          }
+      }
     case state: WorkerState =>
       import WorkerState._
       state match {
-        case Terminating => workers -= sender()
+        case Terminating =>
+          log.info(s"Instance $id terminated")
+          workers -= sender()
         case Ready =>
+          if (workers(sender())==WorkerState.New) log.info(s"Instance $id ready")
           workers += sender() -> state
           self ! Dequeue
         case _ => //
       }
   }
   override def receive: Receive = workermanagement orElse {
-    case e:Eval=>
+    case m:Meta =>
+      metas ::= (sender(),m)
+    case e:Action =>
       work += sender() -> e
-    case Inputs =>
-      metas ::= (sender(),Inputs)
-    case Outputs =>
-      metas ::= (sender(),Outputs)
    }
 }
 

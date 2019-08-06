@@ -18,7 +18,7 @@ class MessageHandler(timeout: Timeout, sheets:Config) extends Actor with ActorLo
   private def getOrCreate(wbName:String) = workbooks.get(wbName) match {
     case Some(ref) => ref
     case None =>
-      val ref =  context.actorOf(Props(classOf[WorkbookManager], timeout, sheets.getConfig(wbName)))
+      val ref =  context.actorOf(Props(classOf[WorkbookManager], wbName, sheets.getConfig(wbName)))
       workbooks += wbName->ref
       ref
   }
@@ -54,6 +54,8 @@ class MessageHandler(timeout: Timeout, sheets:Config) extends Actor with ActorLo
              ask(getOrCreate(sheet) ,Outputs)(timeout).mapTo[Seq[Variable]].map(marshallInputs).recover(errorString).pipeTo(sender())
            case "calc" =>
              ask(getOrCreate(sheet) , Eval(params))(timeout).mapTo[Seq[Result]].map(marshallResults).recover(errorString).pipeTo(sender())
+           case "get" =>
+             ask(getOrCreate(sheet) , Get(params))(timeout).mapTo[String].map(c=>s"OK\u0000$c").recover(errorString).pipeTo(sender())
            case "find" =>
              sender !  s"KO\u0000command $cmd not implemented"
            case _ =>

@@ -8,14 +8,29 @@ import com.sapiens.exceltranslate.Service.sess
 import com.typesafe.config.ConfigFactory
 import javax.jms.{Message, MessageListener, Session}
 import org.apache.activemq.ActiveMQConnectionFactory
+import org.apache.activemq.broker.BrokerService
 
 import scala.util.Try
 
 object Service extends App {
+  args.headOption.foreach(System.setProperty("config.file", _))
   val system = ActorSystem("calc")
   implicit val ec = system.dispatcher
   val config = ConfigFactory.load()
-  val connFactory = new ActiveMQConnectionFactory()
+  import scala.jdk.CollectionConverters._
+  val bindURLs = Try{
+    if(config.getStringList("activemq").isEmpty) List(ActiveMQConnectionFactory.DEFAULT_BROKER_BIND_URL)
+    else config.getStringList("activemq").asScala.toList
+  } getOrElse List(ActiveMQConnectionFactory.DEFAULT_BROKER_BIND_URL)
+  Try(config.getBoolean("startBroker")) foreach(if(_) {
+    val broker = new BrokerService
+    broker.addConnector(bindURLs.head)
+    broker.setPersistent(false)
+    //  broker.setPersistenceAdapter(new MemoryPersistenceAdapter)
+    broker.start
+  })
+
+  val connFactory = new ActiveMQConnectionFactory("failover://"+bindURLs.mkString(",") )
 
   val conn = connFactory.createConnection()
 

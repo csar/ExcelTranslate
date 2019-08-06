@@ -35,8 +35,8 @@ object Compiler extends App{
       println(parser(a2))
       println(parser(a3))
     case Success(io) =>
-     // var unresolved = Map.empty[Reference, Cell]
-      var cells = Map.empty[Expression, Expression]
+     var unresolved = Map.empty[Expression, Expression]
+     var cells = Map.empty[Expression, Static]
       io.input.foreach { variable =>
         variable.reference.getAllReferencedCells foreach { cr =>
           val ref = Reference(cr.getSheetName, cr.getRow, cr.getCol)
@@ -50,13 +50,13 @@ object Compiler extends App{
               case CellType.BOOLEAN =>
                 BooleanVariable(cell.getBooleanCellValue)
             }
-            cells += ref -> e
+            unresolved += ref -> e
           } recover {
             case NonFatal(_) =>
               if (wb.getSheet(ref.sheet).getRow(ref.row) == null) wb.getSheet(ref.sheet).createRow(ref.row)
               var cell = wb.getSheet(ref.sheet).getRow(ref.row).getCell(cr.getCol)
               if (cell == null) cell = wb.getSheet(ref.sheet).getRow(ref.row).createCell(cr.getCol)
-              cells += ref -> (variable.dataType.cellType match {
+              unresolved += ref -> (variable.dataType.cellType match {
                 case CellType.NUMERIC =>
                   NumericVariable(0)
                 case CellType.STRING =>
@@ -71,7 +71,7 @@ object Compiler extends App{
       io.output.foreach { variable =>
         variable.reference.getAllReferencedCells foreach { cr =>
           val ref = Reference(cr.getSheetName, cr.getRow, cr.getCol)
-          cells += ref -> ref
+          unresolved += ref -> ref
 
         }
       }
@@ -97,7 +97,7 @@ object Compiler extends App{
         def isStatic(e: Expression) = e.isInstanceOf[Static] || cells(e).isInstanceOf[Static]
 
         var reduced = false
-        for ((ref, e) <- cells if !e.isInstanceOf[Static] && !e.isInstanceOf[Input]) {
+        for ((ref, e) <- unresolved) {
 
           if (ref==e) {
             // these are evaluateables
@@ -107,7 +107,7 @@ object Compiler extends App{
                   reduced = true
                   try {
                     val resolve = parsers(r.sheet)(r.head(wb))
-                    cells += r -> resolve
+                    unresolved += r -> resolve
 
                   } catch  {
                     case _:NullPointerException =>
@@ -116,16 +116,17 @@ object Compiler extends App{
 
                 } else {
                   reduced = true
-                  cells+= r-> r.toMatrix
+                  unresolved+= r-> r.toMatrix
                 }
               case expr =>
                 ExcelFunctions(expr) match {
                   case Success(literal) =>
                     reduced = true
+                    unresolved-=ref
                     cells += ref -> literal
                   case Failure(Indirection(sheet,target)) =>
                     reduced = true
-                    cells += ref -> INDIRECT.resolve(parsers(sheet.value),target)
+                    unresolved += ref -> INDIRECT.resolve(parsers(sheet.value),target)
 
                   case Failure(ex) =>
                     if (Try(e.deps.map(deref).forall(_.isInstanceOf[Static])).getOrElse(false)) {
@@ -135,7 +136,7 @@ object Compiler extends App{
                     e.deps.filterNot(cells.contains).foreach { e =>
                       reduced = true
 
-                      cells += e -> e
+                      unresolved += e -> e
                     }
 
 
@@ -152,7 +153,7 @@ object Compiler extends App{
 
             case None =>
               reduced = true
-              cells += e -> e
+              unresolved += e -> e
           }
         }
         reduced
@@ -168,11 +169,15 @@ object Compiler extends App{
 
 
       // bind
-      cells = cells.view.mapValues(_ match {
-        case i: Input => i.asLiteral
-        case e => e
+      for( (e,input)<-unresolved if input.isInstanceOf[Input]) {
+        unresolved-=e
+        cells+= e-> input.asInstanceOf[Input].asLiteral
       }
-      ).toMap
+//      cells = cells.view.mapValues(_ match {
+//        case i: Input => i.asLiteral
+//        case e => e
+//      }
+//      ).toMap
 
 
       while (eval()) {
@@ -207,7 +212,7 @@ trait Simple {
   self:WithArgs =>
   override def deps:Seq[Expression] = Nil
 }
-trait Static {
+sealed trait Static {
   self:WithArgs =>
   override def deps:Seq[Expression] = Nil
 }
@@ -296,7 +301,7 @@ case class NumericLiteral(value:Double) extends Expression with Literal{
 }
 trait Input extends Simple {
   self :WithArgs  =>
-  def asLiteral :Expression
+  def asLiteral :Literal
 }
 case class StringVariable(value:String) extends Expression with Input {
   override def asLiteral = StringLiteral(value)
