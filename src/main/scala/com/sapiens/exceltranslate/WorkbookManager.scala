@@ -86,7 +86,7 @@ class WorkbookManager(id:String, config: Config) extends Actor with ActorLogging
         val (caller, action) = work.dequeue()
         val call = Try(action match {
           case Eval(params) =>
-            val atoms = params.split('\u0000')
+            val atoms = params.split(MessageHandler.separator)
             var index = 1 //skip the size
             var binding = Map.empty[Variable,Array[String]]
             for (vi <- 0 until atoms(0).toInt) {

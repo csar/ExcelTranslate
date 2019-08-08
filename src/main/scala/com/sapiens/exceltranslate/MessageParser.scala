@@ -9,7 +9,7 @@ object MessageParser {
     case t:TextMessage =>
       Try {
         val body = t.getText
-        val atoms = body.split('\u0000')
+        val atoms = body.split(MessageHandler.separator)
         atoms.head match  {
           case "input" =>
             InputDescription(atoms(1))
