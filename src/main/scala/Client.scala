@@ -1,3 +1,4 @@
+import com.sapiens.exceltranslate.MessageHandler
 import com.typesafe.config.ConfigFactory
 import javax.jms.{Message, MessageListener, Session, TextMessage}
 import org.apache.activemq.ActiveMQConnectionFactory
