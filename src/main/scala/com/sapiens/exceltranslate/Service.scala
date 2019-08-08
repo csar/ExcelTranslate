@@ -44,7 +44,7 @@ object Service extends App {
   implicit val timeout = Timeout(1,TimeUnit.MINUTES)
   val handler = system.actorOf(Props(classOf[MessageHandler], timeout,config.getConfig("sheets")))
   cons.setMessageListener(new MessageListener {
-    def onMessage(message: Message): Unit = (handler ? message).mapTo[String].recover{case _:AskTimeoutException => "KO${MessageHandler.separator}timeout"} foreach {r =>
+    def onMessage(message: Message): Unit = (handler ? message).mapTo[String].recover{case _:AskTimeoutException => s"KO${MessageHandler.separator}timeout"} foreach {r =>
       val tm = sess.createTextMessage(r)
       tm.setJMSCorrelationID(message.getJMSCorrelationID)
       if(message.getJMSReplyTo==null) reply.send(tm)

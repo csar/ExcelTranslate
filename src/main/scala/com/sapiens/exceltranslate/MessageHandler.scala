@@ -12,6 +12,7 @@ import scala.util.control.NonFatal
 import scala.util.{Failure, Success}
 object MessageHandler {
   val separator = '\u0006'
+  val separatorString = "\u0006"
 }
 class MessageHandler(timeout: Timeout, sheets:Config) extends Actor with ActorLogging {
   import concurrent.ExecutionContext.Implicits.global
@@ -35,11 +36,11 @@ class MessageHandler(timeout: Timeout, sheets:Config) extends Actor with ActorLo
   }
   def marshallInputs(vars: Seq[Variable]):String = s"OK${MessageHandler.separator}${vars.size}${MessageHandler.separator}${vars.map{v =>
     s"${v.no}${MessageHandler.separator}${v.name}${MessageHandler.separator}${v.dataType.id}${MessageHandler.separator}${v.rows}${MessageHandler.separator}${v.cols}"
-  }.mkString("${MessageHandler.separator}")}"
+  }.mkString(MessageHandler.separatorString)}"
   def marshallResults(results: Seq[Result]):String = s"OK${MessageHandler.separator}${results.size}${MessageHandler.separator}${results.map{ vd =>
     val Result(v,data) = vd
     s"${v.no}${MessageHandler.separator}${v.name}${MessageHandler.separator}${v.dataType.id}${MessageHandler.separator}${v.rows}${MessageHandler.separator}${v.cols}${MessageHandler.separator}${data.mkString("${MessageHandler.separator}")}"
-  }.mkString("${MessageHandler.separator}")}"
+  }.mkString(MessageHandler.separatorString)}"
   def errorString:PartialFunction[Throwable,String] = {
     case NonFatal(e) =>
       s"KO${MessageHandler.separator}${e.getMessage}"
