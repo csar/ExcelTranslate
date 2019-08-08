@@ -1,0 +1,2 @@
+[debug] Executing Native docker build --force-rm -t ExcelServer:0.1 .
+[debug] Working directory C:\Users\carst\Documents\sapiens\ExcelTranslate\target\docker\stage

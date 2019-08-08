@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="sbt: org.apache.activemq:activemq-openwire-legacy:5.15.9:jar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/org.apache.activemq/activemq-openwire-legacy/jars/activemq-openwire-legacy-5.15.9.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/org.apache.activemq/activemq-openwire-legacy/srcs/activemq-openwire-legacy-5.15.9-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

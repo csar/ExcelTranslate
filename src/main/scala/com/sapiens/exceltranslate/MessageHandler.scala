@@ -34,16 +34,16 @@ class MessageHandler(timeout: Timeout, sheets:Config) extends Actor with ActorLo
 
     (body.substring(0,cmd), body.substring(cmd+1, id), body.substring(id+1))
   }
-  def marshallInputs(vars: Seq[Variable]):String = s"OK${MessageHandler.separator}${vars.size}${MessageHandler.separator}${vars.map{v =>
-    s"${v.no}${MessageHandler.separator}${v.name}${MessageHandler.separator}${v.dataType.id}${MessageHandler.separator}${v.rows}${MessageHandler.separator}${v.cols}"
-  }.mkString(MessageHandler.separatorString)}"
-  def marshallResults(results: Seq[Result]):String = s"OK${MessageHandler.separator}${results.size}${MessageHandler.separator}${results.map{ vd =>
+  def marshallInputs(vars: Seq[Variable]):String = s"OK$separator${vars.size}$separator${vars.map{v =>
+    s"${v.no}$separator${v.name}$separator${v.dataType.id}$separator${v.rows}$separator${v.cols}"
+  }.mkString(separatorString)}"
+  def marshallResults(results: Seq[Result]):String = s"OK$separator${results.size}$separator${results.map{ vd =>
     val Result(v,data) = vd
-    s"${v.no}${MessageHandler.separator}${v.name}${MessageHandler.separator}${v.dataType.id}${MessageHandler.separator}${v.rows}${MessageHandler.separator}${v.cols}${MessageHandler.separator}${data.mkString("${MessageHandler.separator}")}"
-  }.mkString(MessageHandler.separatorString)}"
+    s"${v.no}$separator${v.name}$separator${v.dataType.id}$separator${v.rows}$separator${v.cols}$separator${data.mkString(separatorString)}"
+  }.mkString(separatorString)}"
   def errorString:PartialFunction[Throwable,String] = {
     case NonFatal(e) =>
-      s"KO${MessageHandler.separator}${e.getMessage}"
+      s"KO$separator${e.getMessage}"
    }
    def receive:Receive = {
      case t:TextMessage  =>
@@ -58,15 +58,15 @@ class MessageHandler(timeout: Timeout, sheets:Config) extends Actor with ActorLo
            case "calc" =>
              ask(getOrCreate(sheet) , Eval(params))(timeout).mapTo[Seq[Result]].map(marshallResults).recover(errorString).pipeTo(sender())
            case "get" =>
-             ask(getOrCreate(sheet) , Get(params))(timeout).mapTo[String].map(c=>s"OK${MessageHandler.separator}$c").recover(errorString).pipeTo(sender())
+             ask(getOrCreate(sheet) , Get(params))(timeout).mapTo[String].map(c=>s"OK$separator$c").recover(errorString).pipeTo(sender())
            case "find" =>
-             sender !  s"KO${MessageHandler.separator}command $cmd not implemented"
+             sender !  s"KO${separator}command $cmd not implemented"
            case _ =>
-             sender !  s"KO${MessageHandler.separator}command $cmd undefined"
+             sender !  s"KO${separator}command $cmd undefined"
          }
        } catch {
          case NonFatal(e) =>
-           sender() ! s"KO${MessageHandler.separator}${e.getMessage}"
+           sender() ! s"KO$separator${e.getMessage}"
        }
      case m:Message =>
        log.warning(s"Received $m - no idea what to do with it")

@@ -1,0 +1,21 @@
+[warn] [1] sbt-native-packager wasn't able to identify the docker version. Some features may not be enabled
+[warn] sbt-native packager tries to parse the `docker version` output. This can fail if
+[warn] 
+[warn]   - the output has changed:
+[warn]     $ docker version --format '{{.Server.Version}}'
+[warn] 
+[warn]   - no `docker` executable is available
+[warn]     $ which docker
+[warn] 
+[warn]   - you have not the required privileges to run `docker`
+[warn] 
+[warn] You can display the parsed docker version in the sbt console with:
+[warn] 
+[warn]   sbt:your-project> show dockerVersion
+[warn] 
+[warn] As a last resort you could hard code the docker version, but it's not recommended!!
+[warn] 
+[warn]   import com.typesafe.sbt.packager.docker.DockerVersion
+[warn]   dockerVersion := Some(DockerVersion(18, 9, 0, Some("ce"))
+[warn]           
+[success] All package validations passed
