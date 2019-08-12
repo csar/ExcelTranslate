@@ -84,16 +84,19 @@ object BindingFactory {
 
     InputOutput(input.toSeq, output.toSeq)
   }
+  def fromMacro(wb:Workbook, fileName:String) = Using(new VBAMacroReader(new FileInputStream(fileName)))(_.readMacros().get("URS_VariableDefinition")) map { text =>
+
+    val xml = Source.fromString(text).getLines().dropWhile(!_.contains("Document")).map(_ drop 1).filterNot(_.isEmpty).mkString("")
+    val params = XML.loadString(xml)
+    InputOutput(extractVariables(wb, params \ "Input"), extractVariables(wb, params \ "Output"))
+  }
+
   def apply(wb:Workbook, fileName:String = arguments(CalcSheet),bindingXML:String = arguments(Binding)):InputOutput = {
 
      val formulaIO = wb.getSheet(FormulaIO)
 
-    val bindings: Try[InputOutput] = if (formulaIO == null) Using(new VBAMacroReader(new FileInputStream(fileName)))(_.readMacros().get("URS_VariableDefinition")) map { text =>
-
-         val xml = Source.fromString(text).getLines().dropWhile(!_.contains("Document")).map(_ drop 1).filterNot(_.isEmpty).mkString("")
-         val params = XML.loadString(xml)
-         InputOutput(extractVariables(wb, params \ "Input"), extractVariables(wb, params \ "Output"))
-
+    val bindings: Try[InputOutput] = if (formulaIO == null) {
+      fromMacro(wb,fileName)
      } else {
        fromFormulaIO(formulaIO)
      }

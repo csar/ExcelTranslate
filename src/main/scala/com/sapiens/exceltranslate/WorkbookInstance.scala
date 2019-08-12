@@ -50,8 +50,8 @@ class WorkbookInstance(id:String,wbf:Future[Workbook], output:Seq[Variable]) ext
   def compute() = {
      output map { variable =>
       val values = variable.cells(wb).map(evaluator.evaluate).map { cv =>
-        if (cv.getCellType == CellType.ERROR) throw new RuntimeException(s"Calculation Error: ${cv.getErrorValue}")
-        variable.dataType match {
+        if (cv.getCellType == CellType.ERROR) ""
+        else variable.dataType match {
           case Alpha => cv.getStringValue
           case Bool => if (cv.getBooleanValue) "1" else "0"
           case Numeric | DateType => cv.getNumberValue.toString
@@ -161,8 +161,8 @@ class WorkbookInstance(id:String,wbf:Future[Workbook], output:Seq[Variable]) ext
 
     case Calculate(values) => try {
       bind(values)
-      log.info("Thinking")
-      Thread.sleep(1000)
+//      log.info("Thinking")
+//      Thread.sleep(1000)
 
       sender ! compute()
     } catch {

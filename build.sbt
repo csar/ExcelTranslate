@@ -1,6 +1,6 @@
 name := "ExcelTranslate"
 
-version := "0.1"
+version := "0.2"
 maintainer := "carsten.saager@sapiens.org"
 scalaVersion := "2.13.0"
 

@@ -12,6 +12,7 @@ import org.apache.poi.ss.usermodel.{Workbook, WorkbookFactory}
 import scala.collection.mutable
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Future, Promise, blocking}
+import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
 trait Action
@@ -27,6 +28,7 @@ case object CheckRemove
 class WorkbookManager(id:String, config: Config) extends Actor with ActorLogging  {
   implicit val ec = context.dispatcher
   var io :InputOutput=_
+  var file:String = _
   var workers = Map.empty[ActorRef, WorkerState.WorkerState]
   val work = new mutable.Queue[(ActorRef,Action)]
   var metas = List.empty[(ActorRef,Action)]
@@ -38,7 +40,6 @@ class WorkbookManager(id:String, config: Config) extends Actor with ActorLogging
 
   def newWorkbook = Future {
     blocking {
-      val file = config.getString("file")
      WorkbookFactory.create(new FileInputStream(file))
     }
   }
@@ -46,21 +47,39 @@ class WorkbookManager(id:String, config: Config) extends Actor with ActorLogging
     log.info(s"Creating WorkbookInstance $id")
     workers += context.actorOf(Props(classOf[WorkbookInstance],id,  wbf, output)) -> WorkerState.New
   }
+
+  def init(candidates:List[String]) : Future[InputOutput] = if (candidates.isEmpty) Future.failed(new RuntimeException(s"Couldn't locate or load workbook for formula $id")) else {
+    file = candidates.head
+    newWorkbook map { workbook=>
+      io = Try(InputOutput.fromConfig(workbook)(config.getConfig("binding"))) getOrElse  {
+        BindingFactory(workbook, file,"")
+      }
+      createInstance(Future successful workbook, io.output)
+      for( (ref, action) <- metas.reverse) {
+        self.tell(action,ref)
+      }
+      io
+
+    } recoverWith {
+      case NonFatal(_) =>
+        init(candidates.tail)
+    }
+  }
   override def preStart(): Unit = {
     // make the first Workbook instance to capture the IO definition
-    newWorkbook map { workbook=>
-        io = BindingFactory(workbook, config.getString("file"),"")
-        createInstance(Future successful workbook, io.output)
-        for( (ref, action) <- metas.reverse) {
-          self.tell(action,ref)
-        }
-        io
-
-    } onComplete {
+    val excelDir = Try(Service.config.getString("excelDir")).getOrElse("")
+    val candidates = Try(config.getString("file")).map(excelDir + _).map(List(_)).getOrElse {
+      new File(excelDir).listFiles().filter(_.isFile).filter { file =>
+        val name = file.getName
+        name.startsWith(id) && name.substring(id.length).filter(_=='.').size==1 && name.substring(id.length).startsWith(".")
+      }.map { _.getPath}.toList
+    }
+    init(candidates) onComplete {
       case Success(io) =>
         context become ready(io).orElse(workermanagement)
         replay
       case Failure(exception) =>
+        file = null
         context become failure(exception )
         replay
     }

@@ -1,5 +1,4 @@
 import org.apache.activemq.broker.BrokerService
-import org.apache.activemq.store.memory.MemoryPersistenceAdapter
 
 object Broker extends App {
  val broker = new BrokerService

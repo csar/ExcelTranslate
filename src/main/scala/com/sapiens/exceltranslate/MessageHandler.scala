@@ -1,5 +1,6 @@
 package com.sapiens.exceltranslate
 
+import java.io.File
 import java.util.concurrent.TimeUnit
 
 import akka.pattern.{ask, pipe}
@@ -9,7 +10,7 @@ import com.typesafe.config.Config
 import javax.jms.{Message, MessageProducer, TextMessage}
 
 import scala.util.control.NonFatal
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 object MessageHandler {
   val separator = '\u0006'
   val separatorString = "\u0006"
@@ -21,7 +22,7 @@ class MessageHandler(timeout: Timeout, sheets:Config) extends Actor with ActorLo
   private def getOrCreate(wbName:String) = workbooks.get(wbName) match {
     case Some(ref) => ref
     case None =>
-      val ref =  context.actorOf(Props(classOf[WorkbookManager], wbName, sheets.getConfig(wbName)))
+      val ref =  context.actorOf(Props(classOf[WorkbookManager], wbName, Try(sheets.getConfig(wbName)).getOrElse(Service.config.getConfig("sheetDefaults"))))
       workbooks += wbName->ref
       ref
   }

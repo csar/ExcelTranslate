@@ -3,6 +3,7 @@ package com.sapiens.exceltranslate
 import java.io.{File, FileInputStream, FileOutputStream}
 import java.util.Locale
 
+import com.typesafe.config.{Config, ConfigList, ConfigObject}
 import org.apache.poi.ss.usermodel._
 import org.apache.poi.ss.util.{AreaReference, DateFormatConverter}
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
@@ -18,12 +19,34 @@ object Args extends Enumeration {
 
 import com.sapiens.exceltranslate.Args._
 
+object InputOutput {
+  def fromConfig(wb:Workbook)(bind:Config) = {
+    import scala.jdk.CollectionConverters._
 
+    def makeSeq(cl: java.util.List[_ <: Config]) = for( (bind, index) <- cl.asScala.toSeq.zipWithIndex) yield Variable.fromConfig(index+1, bind, wb)
+    InputOutput(makeSeq(bind.getConfigList("inputs") ),makeSeq(bind.getConfigList("outputs")))
+  }
+}
 case class InputOutput(input: Seq[Variable], output: Seq[Variable]) {
   val inputsize = input.map(_.cols).sum
   val outputsize = output.map(_.cols).sum
 
   val stride = input.map(_.rows).max max output.map(_.rows).max
+
+  def toConfig(file:String, includeBinding:Boolean ,from:String="") =  {
+    val binding = if (includeBinding) s"""binding:{
+                                         |    inputs:[
+                                         |    ${input.map(_.toConfig()).mkString("\n")}
+                                         |    ]
+                                         |    outputs:[
+                                         |    ${output.map(_.toConfig()).mkString("\n")}
+                                         |    ]
+                                         |  }""".stripMargin else ""
+    s"""$from{
+       |  file="$file"
+       |  $binding
+       |}""".stripMargin
+  }
 }
 
 object LoadExcel extends App {
@@ -409,8 +432,27 @@ object LoadExcel extends App {
 
 }
 
+object Variable {
+  def fromConfig(no:Int, c:Config, wb:Workbook):Variable = {
+    Variable(no,c.getString("name"), c.getString("type") match {
+      case "number" => Numeric
+      case "date" => DateType
+      case "bool" => Bool
+      case "string" => Alpha
+    }, new AreaReference(c.getString("ref"),wb.getSpreadsheetVersion), c.getInt("rows"), c.getInt("cols"))
+  }
+}
 
 case class Variable(no: Int, name: String, dataType: DataType, reference: AreaReference, rows: Int = 1, cols: Int = 1) {
+  def toConfig(): String =
+    s"""{
+       |name="$name"
+       |type=$dataType
+       |ref="${reference.getFirstCell.formatAsString()}"
+       |rows=$rows
+       |cols=$cols
+       }""".stripMargin
+
   def cellType: CellType = dataType.cellType
 
   def asString(value: CellValue): String = dataType match {
