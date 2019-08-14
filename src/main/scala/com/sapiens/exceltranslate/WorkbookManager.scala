@@ -40,11 +40,12 @@ class WorkbookManager(id:String, config: Config) extends Actor with ActorLogging
 
   def newWorkbook = Future {
     blocking {
+      log.debug(s"Loading $file as workbook")
      WorkbookFactory.create(new FileInputStream(file))
     }
   }
   def createInstance(wbf:Future[Workbook] = newWorkbook, output:Seq[Variable]=io.output):Unit = {
-    log.info(s"Creating WorkbookInstance $id")
+    log.info(s"Creating WorkbookInstance $id current #workers=${workers.size}")
     workers += context.actorOf(Props(classOf[WorkbookInstance],id,  wbf, output)) -> WorkerState.New
   }
 
@@ -62,6 +63,8 @@ class WorkbookManager(id:String, config: Config) extends Actor with ActorLogging
 
     } recoverWith {
       case NonFatal(_) =>
+        val msg = s"Loading of $file failed for formula $id"
+        log.warning(msg)
         init(candidates.tail)
     }
   }
@@ -69,6 +72,7 @@ class WorkbookManager(id:String, config: Config) extends Actor with ActorLogging
     // make the first Workbook instance to capture the IO definition
     val excelDir = Try(Service.config.getString("excelDir")).getOrElse("")
     val candidates = Try(config.getString("file")).map(excelDir + _).map(List(_)).getOrElse {
+      log.info(s"No config $id, checking in excelDir=$excelDir")
       new File(excelDir).listFiles().filter(_.isFile).filter { file =>
         val name = file.getName
         name.startsWith(id) && name.substring(id.length).filter(_=='.').size==1 && name.substring(id.length).startsWith(".")
@@ -132,7 +136,7 @@ class WorkbookManager(id:String, config: Config) extends Actor with ActorLogging
       // no readies here
       if (initializing<1)  {
         createInstance()
-      } else  log.debug(s"Damped instance creation for $id")
+      } else  log.debug(s"Damped instance creation for $id current #workers=${workers.size}, #queue=${work.size}")
 
 
     }
@@ -161,12 +165,12 @@ class WorkbookManager(id:String, config: Config) extends Actor with ActorLogging
     case CheckRemove if workers.size>work.size && workers.size> keepMin=>
       workers.find(_._2==WorkerState.New) match {
         case Some((ref,_)) =>
-          log.info(s"Termination new instance $id")
+          log.info(s"Termination new instance $id current #workers=${workers.size}")
           ref ! PoisonPill
           workers -= ref
         case None =>
           workers.find(_._2==WorkerState.Ready).map(_._1) foreach { ref =>
-            log.info(s"Termination ready instance $id")
+            log.info(s"Termination ready instance $id current #workers=${workers.size}")
             ref ! PoisonPill
             workers -= ref
           }
@@ -175,10 +179,10 @@ class WorkbookManager(id:String, config: Config) extends Actor with ActorLogging
       import WorkerState._
       state match {
         case Terminating =>
-          log.info(s"Instance $id terminated")
+          log.info(s"Instance $id terminated current #workers=${workers.size}")
           workers -= sender()
         case Ready =>
-          if (workers(sender())==WorkerState.New) log.info(s"Instance $id ready")
+          if (workers(sender())==WorkerState.New) log.info(s"Instance $id ready current #workers=${workers.size}")
           workers += sender() -> state
           self ! Dequeue
         case _ => //

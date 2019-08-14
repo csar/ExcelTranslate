@@ -33,17 +33,18 @@ object CheckFiles extends App {
         println(s"$file can not be loaded as a workbook: $e ")
         Failure(e)
     } flatMap { wb =>
-      existingBind.map( InputOutput.fromConfig(wb)) recoverWith  { case _ =>
-        try {
+      try {
+        existingBind.map( InputOutput.fromConfig(wb)) recoverWith  { case _ =>
+
           BindingFactory.fromFormulaIO(wb.getSheet(FormulaIO)) recoverWith {
             case NonFatal(e) =>
               // println(s"No FormulaIO in $file, $e")
               BindingFactory.fromMacro(wb, excelFile.getPath)
           }
+        }
         } finally {
           wb.close()
         }
-      }
 
     }  recoverWith {
       case ve:VerifyException => Failure(ve)

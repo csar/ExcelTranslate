@@ -6,7 +6,6 @@
     </profile>
     <profile name="sbt 2" modules="ExcelTranslate">
       <option name="deprecationWarnings" value="true" />
-      <option name="uncheckedWarnings" value="true" />
     </profile>
   </component>
 </project>

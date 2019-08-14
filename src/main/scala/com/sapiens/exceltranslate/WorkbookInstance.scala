@@ -62,6 +62,11 @@ class WorkbookInstance(id:String,wbf:Future[Workbook], output:Seq[Variable]) ext
     }
   }
 
+  override def aroundReceive(receive: Receive, msg: Any): Unit = {
+    val start = System.nanoTime()
+    super.aroundReceive(receive, msg)
+    log.debug(s"${msg.getClass.getSimpleName} took ${(System.nanoTime()-start)/1_000_000.0}ms")
+  }
   override def receive: Receive = {
     case Get(ref) =>
       try {

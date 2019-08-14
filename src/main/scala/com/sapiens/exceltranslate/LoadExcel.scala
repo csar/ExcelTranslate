@@ -162,7 +162,7 @@ object LoadExcel extends App {
         val index = r*v.cols+c
         val field = forResult.map(_._1(index))
         val successes = field.flatMap(_.toOption)
-        val fails = field.collect{case NonFatal(e) => e.getMessage}
+        val fails = field.collect{case Failure(e) => e.getMessage}
         val variations =  successes.map(t=> t.formatAsString() -> t).toMap
         if (variations.size==1) {
           v.dataType match {

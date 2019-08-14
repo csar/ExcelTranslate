@@ -48,7 +48,6 @@ class MessageHandler(timeout: Timeout, sheets:Config) extends Actor with ActorLo
    }
    def receive:Receive = {
      case t:TextMessage  =>
-       log.debug(s"Received $t")
        val (cmd,sheet,params) = split(t.getText)
        try {
          cmd match {
@@ -63,14 +62,16 @@ class MessageHandler(timeout: Timeout, sheets:Config) extends Actor with ActorLo
            case "find" =>
              sender !  s"KO${separator}command $cmd not implemented"
            case _ =>
+             log.warning(s"Unknown command $cmd")
              sender !  s"KO${separator}command $cmd undefined"
          }
        } catch {
          case NonFatal(e) =>
+           log.error(s"Failed to process ${t.getText}",e)
            sender() ! s"KO$separator${e.getMessage}"
        }
      case m:Message =>
-       log.warning(s"Received $m - no idea what to do with it")
+       log.warning(s"Received ${m.getClass.getCanonicalName} - no idea what to do with it")
    }
 }
 

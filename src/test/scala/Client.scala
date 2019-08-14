@@ -12,7 +12,7 @@ object Client extends App {
 
   val sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE)
 
-  val dest = sess.createQueue(config.getString("queue"))
+  val dest = sess.createQueue(config.getConfig("activeMQ").getString("queue"))
   val reply = sess.createTemporaryQueue()
   val read = sess.createConsumer(reply)
   val producer = sess.createProducer(dest)
