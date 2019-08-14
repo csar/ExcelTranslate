@@ -14,13 +14,13 @@ Every input starts with a command token the supported tokens are
    
    `iarr|my formula identifier|`
    
-   The response is the [Input description](input-description)
+   The response is the [Input description](#input-description)
 * `oarr`
   This requests the definition of the input array and must be followed by the formula token:
      
      `oarr|my formula identifier|`
      
-     The response is the [Output description](output-description)    
+     The response is the [Output description](#output-description)    
 * `calc`  
     This requests the definition of the input array and must be followed by the formula token and
 
@@ -41,7 +41,7 @@ Every input starts with a command token the supported tokens are
     `calc|example|12|v1r1c1|v1r1c2|v1r2c1|v1r2c2|v1r3c1|v1r3c2|
     v2r1c1|v2r1c2|v2r1c3|v2r2c1|v2r2c2|v2r2c3|`
     
-    The response is the [Calculation result](calculation-result)    
+    The response is the [Calculation result](#calculation-result)    
 
 ### Output messages
 
