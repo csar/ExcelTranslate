@@ -1,13 +1,13 @@
-#ExcelTranslate
+# ExcelTranslate
 
 ExcelTranslate is a service to run a calculation service based on Excel files via ActiveMQ.
 
-##Message Format
+## Message Format
 All messages are of `TextMessage` type. Each messages are composed of tokens separated by `'\u0006'` (in this document it is represented by `'|'` for readability).
 Each message is optionally terminated by `'\u0006'`.
 
 The format is designed for size and simple marshalling/unmarshalling.
-###Input messages
+### Input messages
 Every input starts with a command token the supported tokens are 
 * `iarr`
    This requests the definition of the input array and must be followed by the formula token:
@@ -43,7 +43,7 @@ Every input starts with a command token the supported tokens are
     
     The response is the [Calculation result](calculation-result)    
 
-###Output messages
+### Output messages
 
 A common element in a response is the Variable:
 
@@ -59,11 +59,11 @@ The type is one of
 |2|`bool`|Boolean|'0' or '1' |
 |3|`date`|Date|treated as a numeric|
 
-####Error
+#### Error
 The client application must check for error type response for any request. Errors are signalled by the prefix `KO` and followed by free text:
 
     KO|Some more or less descriptive error message
-####Input description
+#### Input description
 The Input description is a `OK` response followed by the number `n` of input variables and a sequence of `n` variables.
 Example of two variables 'value1' and 'value2' both simple numeric values:
 
@@ -71,9 +71,9 @@ Example of two variables 'value1' and 'value2' both simple numeric values:
 
 The variables will be returned always in the order of their number, starting from 1.
 
-###Output description
+### Output description
 Same as Input description
-###Calculation result
+### Calculation result
 The Calculation result is a `OK` response followed by the number `n` of out variables and a sequence of `n` variables followed by their values.
     
     OK|1|1|result|1|1|1|1000.00
@@ -82,16 +82,16 @@ The values for matrix variables are a sequence of length rows*cols:
     
     1|texts|0|2|3|r1c1|r1c2|r1c3|r2c1|r2c2|r2c3    
     
-##Running the server
+## Running the server
 Just start `service(.bat)` this use the reference.conf.
 Either add your configuration as a path or as a java option `-Dconfig.file=./my.conf`
 
      
-##Configuration 
+## Configuration 
 See [reference.conf](src/main/resources/reference.conf) for defaults.
 If the Excel files are located in the directory from where you run the service, almost no configuration is needed. 
 
-###Sheet configuration
+### Sheet configuration
 As long as the file names match the formula id, no configuration is required besides the `excelDir`.
 If a file cannot follow the naming convention, a `sheet` object needs to be added to the configuration:
 
@@ -155,14 +155,14 @@ sheets {
 }
 ```
  
-###Logging
+### Logging
 For production it is recommended to set the Akka log level
 
 `akka.loglevel=WARN` 
 
 The general logging is by default defined by [logback.xml](src/main/resources/logback.xml) and can be overriden by the java option `-Dlogback.configurationFile=/path/to/config.xml`
 
-##sbt tasks
+## sbt tasks
 
 To make a zip that contains the packaged application use `sbt universal:packageBin`
 
