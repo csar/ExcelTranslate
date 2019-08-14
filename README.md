@@ -52,7 +52,7 @@ A common element in a response is the Variable:
 This defines Variable number 3 with the name 'name' of type 1 as a matrix of 2 rows with 4 columns.
 The type is one of
 
-|Type|Identifier|Semantics|Remark|
+|Code|type|Semantics|Remark|
 |---|---|---|---| 
 |0|`string`|UTF-8 encoded text|must not contain the terminator character!|
 |1|`number`|Numeral|Anything parseable as double in the en_US locale, empty value represents NaN|
