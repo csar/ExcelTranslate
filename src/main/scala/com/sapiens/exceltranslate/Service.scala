@@ -24,8 +24,8 @@ object Service extends App {
   val  activeMQ = config.getConfig("activeMQ")
   import scala.jdk.CollectionConverters._
   val bindURLs = Try{
-    if(activeMQ.getStringList("activemq").isEmpty) List(ActiveMQConnectionFactory.DEFAULT_BROKER_BIND_URL)
-    else activeMQ.getStringList("activemq").asScala.toList
+    if(activeMQ.getStringList("bind").isEmpty) List(ActiveMQConnectionFactory.DEFAULT_BROKER_BIND_URL)
+    else activeMQ.getStringList("bind").asScala.toList
   } getOrElse List(ActiveMQConnectionFactory.DEFAULT_BROKER_BIND_URL)
   Try(activeMQ.getBoolean("startBroker")) foreach(if(_) {
     val broker = new BrokerService
