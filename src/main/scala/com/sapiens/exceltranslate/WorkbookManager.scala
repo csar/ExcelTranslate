@@ -70,7 +70,7 @@ class WorkbookManager(id:String, config: Config) extends Actor with ActorLogging
   }
   override def preStart(): Unit = {
     // make the first Workbook instance to capture the IO definition
-    val excelDir =  new File(config.getString("excelDir"))
+    val excelDir =  new File(Service.config.getString("excelDir"))
     val candidates = Try(config.getString("file")).map(new File(excelDir , _).getCanonicalPath).map(List(_)).getOrElse {
       log.info(s"No config $id, checking in excelDir=$excelDir")
       excelDir.listFiles().filter(_.isFile).filter { file =>

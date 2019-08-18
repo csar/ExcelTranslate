@@ -6,7 +6,7 @@ import org.apache.activemq.ActiveMQConnectionFactory
 object Client extends App {
 
   val config = ConfigFactory.load()
-  val connFactory = new ActiveMQConnectionFactory("tcp://localhost:61616")
+  val connFactory = new ActiveMQConnectionFactory("tcp://94.245.95.200:61616")
 
   val conn = connFactory.createConnection()
 
