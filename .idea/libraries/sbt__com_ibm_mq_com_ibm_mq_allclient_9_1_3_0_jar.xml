@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="sbt: com.ibm.mq:com.ibm.mq.allclient:9.1.3.0:jar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/com.ibm.mq/com.ibm.mq.allclient/jars/com.ibm.mq.allclient-9.1.3.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/com.ibm.mq/com.ibm.mq.allclient/srcs/com.ibm.mq.allclient-9.1.3.0-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

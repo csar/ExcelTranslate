@@ -1,6 +1,6 @@
 name := "ExcelTranslate"
 
-version := "0.2"
+version := "0.3"
 maintainer := "carsten.saager@sapiens.org"
 scalaVersion := "2.13.0"
 
@@ -25,6 +25,9 @@ libraryDependencies += "org.scala-lang.modules" %% "scala-xml" % "1.2.0"
 
 // https://mvnrepository.com/artifact/org.apache.activemq/activemq-client
 libraryDependencies += "org.apache.activemq" % "activemq-client" % "5.15.9"
+
+// https://mvnrepository.com/artifact/com.ibm.mq/com.ibm.mq.allclient
+libraryDependencies += "com.ibm.mq" % "com.ibm.mq.allclient" % "9.1.3.0"
 
 // https://mvnrepository.com/artifact/com.typesafe/config
 libraryDependencies += "com.typesafe" % "config" % "1.3.4"
@@ -58,5 +61,5 @@ daemonUser in Docker := "extrans"
 // I think we only need it if the app runs the MQ itself
 dockerExposedPorts:=Seq(61616)
 
-dockerEntrypoint:=Seq("/opt/docker/bin/service")
+//dockerEntrypoint:=Seq("/opt/docker/bin/exceltranslate")
 

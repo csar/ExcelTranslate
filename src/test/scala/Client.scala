@@ -1,33 +1,84 @@
-import com.sapiens.exceltranslate.MessageHandler
+import com.sapiens.exceltranslate.Listener.transport
+import com.sapiens.exceltranslate.{Listener, MessageHandler, Transports}
 import com.typesafe.config.ConfigFactory
-import javax.jms.{Session, TextMessage}
+import javax.jms.{Destination, TextMessage}
 import org.apache.activemq.ActiveMQConnectionFactory
 
+import scala.util.{Random, Try}
+
 object Client extends App {
-
   val config = ConfigFactory.load()
-  val connFactory = new ActiveMQConnectionFactory("tcp://94.245.95.200:61616")
+  val cqConfig = config.getConfig("client")
+  val (sess: Session, dest: Destination, reply: Destination, producer: Producer, consumer: Consumer,correlationID:Option[String]) = if (transport(cqConfig) == Transports.ActiveMQ) {
+    val connFactory = new ActiveMQConnectionFactory(cqConfig.getStringList("bind").get(0))
 
-  val conn = connFactory.createConnection()
+    val conn = connFactory.createConnection()
 
-  val sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE)
+    val sess = conn.createSession(false, javax.jms.Session.AUTO_ACKNOWLEDGE)
 
-  val dest = sess.createQueue(config.getConfig("activeMQ").getString("queue"))
-  val reply = sess.createTemporaryQueue()
-  val read = sess.createConsumer(reply)
-  val producer = sess.createProducer(dest)
-  conn.start()
+    val dest = sess.createQueue(cqConfig.getString("queue"))
+    val reply = sess.createTemporaryQueue()
+    val consumer = sess.createConsumer(reply)
+    val producer = sess.createProducer(dest)
+    conn.start()
+    (Session(sess), dest, reply, Producer(producer), Consumer(consumer), None)
+  } else {
+    val cf = Listener.mqscf.createConnectionFactory()
+
+    import com.ibm.msg.client.jms.JmsConstants._
+    import com.ibm.msg.client.wmq.common.CommonConstants._
+    // Set the properties// Set the properties
+
+    cf.setStringProperty(WMQ_HOST_NAME, cqConfig.getString("host"))
+    cf.setIntProperty(WMQ_PORT, Try(cqConfig.getInt("port")) getOrElse 1414)
+    cf.setStringProperty(WMQ_CHANNEL, cqConfig.getString("channel"))
+    cf.setIntProperty(WMQ_CONNECTION_MODE, WMQ_CM_CLIENT)
+    cf.setStringProperty(WMQ_QUEUE_MANAGER, cqConfig.getString("manager"))
+    cf.setStringProperty(WMQ_APPLICATIONNAME, Try(cqConfig.getString("appname")) getOrElse "ExcelClient (TEST)")
+    Try(cqConfig.getConfig("authentication")) map { auth =>
+      cf.setBooleanProperty(USER_AUTHENTICATION_MQCSP, true)
+      cf.setStringProperty(USERID, auth.getString("user"))
+      cf.setStringProperty(PASSWORD, auth.getString("password"))
+
+    } recover {
+      case _ =>
+        cf.setBooleanProperty(USER_AUTHENTICATION_MQCSP, false)
+    }
+
+    val conn = cf.createConnection()
+    val sess = conn.createSession(false, javax.jms.Session.AUTO_ACKNOWLEDGE)
+
+    val reply = sess.createQueue( cqConfig.getString("reply"))
+    val CORRELATIONID  = new String(Random.alphanumeric.take(12).toArray)
+    val consumer = sess.createConsumer(reply,s"JMSCorrelationID='$CORRELATIONID'")
+
+
+    val queue = sess.createQueue(  cqConfig.getString("queue"))
+    val producer = sess.createProducer(null)
+    conn.start()
+
+
+    (Session(sess), queue, reply, Producer(producer), Consumer(consumer), Some(CORRELATIONID))
+  }
+
 
   def call(string: String) = {
     val msg = sess.createTextMessage(string)
     msg.setJMSReplyTo(reply)
-    producer.send(msg)
-    var r = read.receive()
-    r.asInstanceOf[TextMessage].getText
+    correlationID.foreach(msg.setJMSCorrelationID)
+    producer.send(dest, msg)
+    var r = consumer.receive()
+    r.asInstanceOf[TextMessage].getText.replace(MessageHandler.separator, '|')
 
   }
-  val formula="Annuity calc JL"
+
+
+
+
+  val formula = "Annuity calc JL"
+
   import com.sapiens.exceltranslate.separator
+
   println("Before", call(s"get${separator}$formula${separator}Control!K7"))
   println("reqann", call(s"get${separator}$formula${separator}Control!B3"))
   println("K21", call(s"get${separator}$formula${separator}Control!K21"))
@@ -63,36 +114,43 @@ object Client extends App {
   val reqIARR = s"iarr${separator}$formula"
   val msg = sess.createTextMessage(reqIARR)
   msg.setJMSReplyTo(reply)
-  println("SEND:",reqIARR.replace(MessageHandler.separator,'|'))
+  correlationID.foreach(msg.setJMSCorrelationID)
+
+  println("SEND:", reqIARR.replace(MessageHandler.separator, '|'))
 
   var start = System.nanoTime()
-  producer.send(msg)
+  producer.send(dest, msg)
 
-  var r = read.receive()
-  println(r.asInstanceOf[TextMessage].getText.replace(MessageHandler.separator,'|'), (System.nanoTime()-start)/1_000_000.0)
+  var r = consumer.receive()
+  println(r.asInstanceOf[TextMessage].getText.replace(MessageHandler.separator, '|'), (System.nanoTime() - start) / 1_000_000.0)
   val reqCALC = s"calc${separator}$formula${separator}16${separator}0${separator}3500${separator}12${separator}5${separator}5${separator}58.73${separator}128${separator}1${separator}2${separator}0${separator}0.0${separator}50${separator}0${separator}0.04${separator}0${separator}1"
   val calc = sess.createTextMessage(reqCALC)
   calc.setJMSReplyTo(reply)
-  println("SEND:",reqCALC.replace(MessageHandler.separator,'|'))
-    start = System.nanoTime()
-    producer.send(calc)
-    r = read.receive()
-    println(r.asInstanceOf[TextMessage].getText.replace(MessageHandler.separator, '|'), (System.nanoTime() - start) / 1_000_000.0)
+  correlationID.foreach(calc.setJMSCorrelationID)
 
+  println("SEND:", reqCALC.replace(MessageHandler.separator, '|'))
+  start = System.nanoTime()
+  producer.send(dest, calc)
+  r = consumer.receive()
+  println(r.asInstanceOf[TextMessage].getText.replace(MessageHandler.separator, '|'), (System.nanoTime() - start) / 1_000_000.0)
 
 
   start = System.nanoTime()
-  for(i<- 1 to 100) {
+  for (i <- 1 to 100) {
     val tm = sess.createTextMessage(reqCALC)
     tm.setJMSReplyTo(reply)
-    producer.send(tm)
+    correlationID.foreach(tm.setJMSCorrelationID)
+
+    producer.send(dest, tm)
+
   }
 
-  for(i<- 1 to 100) {
-    read.receive()
+  for (i <- 1 to 100) { // this reads all messages and doesn't respect the order!
+    consumer.receive()
   }
-  println("100 repeats" ,(System.nanoTime() - start) / 100_000_000.0)
+  println("100 repeats", (System.nanoTime() - start) / 100_000_000.0)
 
-  conn.close()
   sess.close()
 }
+
+

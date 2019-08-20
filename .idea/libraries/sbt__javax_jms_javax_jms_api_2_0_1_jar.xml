@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="sbt: javax.jms:javax.jms-api:2.0.1:jar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/javax.jms/javax.jms-api/jars/javax.jms-api-2.0.1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/javax.jms/javax.jms-api/srcs/javax.jms-api-2.0.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

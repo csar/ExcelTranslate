@@ -91,6 +91,20 @@ Either add your configuration as a path or as a java option `-Dconfig.file=./my.
 See [reference.conf](src/main/resources/reference.conf) for defaults.
 If the Excel files are located in the directory from where you run the service, almost no configuration is needed. 
 
+### Listener configuration
+At least one `listener` must be defined
+
+```` 
+listener {
+  localBroker = ${localAMQ}
+  WebSphereMQ = webSphereMQ
+}
+````
+
+So the server will be able to connect to ActiveMQ and WebSphereMQ at once and share resources between them. The preferred way to define the listener object is via the name of the
+configuration, this avoids initialization problems when substitutions are used.
+
+See the [HOCON](https://github.com/lightbend/config#optional-system-or-env-variable-overrides) documentation on how to use environment variables to simplify managed deployments
 ### Sheet configuration
 As long as the file names match the formula id, no configuration is required besides the `excelDir`.
 If a file cannot follow the naming convention, a `sheet` object needs to be added to the configuration:
