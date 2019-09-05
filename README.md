@@ -168,7 +168,15 @@ sheets {
     }
 }
 ```
+### WatchInterval
+By default changes to the files are ignored once they got loaded, though newly spawned instances will still load the current revision of the file. 
  
+Adding
+
+`watchInterval : 10s`
+
+to the config will install a WatchService on `excelDir` that will invalidate running instances so that they can reload and make sure that only one revision is used in the computations.
+
 ### Logging
 For production it is recommended to set the Akka log level
 
