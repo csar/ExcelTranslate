@@ -78,6 +78,9 @@ object Client extends App {
   val formula = "Annuity calc JL"
 
   import com.sapiens.exceltranslate.separator
+  println(call("iarr\u0006CTRY_DIA_Life_Annuity_calc"))
+  println(call("calc\u0006CTRY_DIA_Life_Annuity_calc\u000614\u0006120000.000000\u000612.000000\u000610.000000\u000640.000000\u00060.000000\u00061.000000\u00060.000000\u00060.000000\u00060.037500\u00061.000000\u00061.000000\u00061.000000\u00060.000000\u00061.000000\u0006 ")
+  )
 
   println("Before", call(s"get${separator}$formula${separator}Control!K7"))
   println("reqann", call(s"get${separator}$formula${separator}Control!B3"))

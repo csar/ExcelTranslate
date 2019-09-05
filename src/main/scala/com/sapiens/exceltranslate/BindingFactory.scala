@@ -122,8 +122,9 @@ object BindingFactory {
        }
      }
    }
-  def extractVariables(wb:Workbook,nodes: NodeSeq) = nodes.flatMap(_.descendant).filter(_.label.startsWith("Variable_")).map { node =>
-    val no = node.label.drop(9).toInt
+  def extractVariables(wb:Workbook,nodes: NodeSeq) = nodes.flatMap(_.descendant).filter(_.label.startsWith("Variable_")).zipWithIndex.map { indexed =>
+    val (node, index ) = indexed
+    val no = index+1
     val name = (node \ "@VarName").toString
     val cellType = (node \ "@VariableType").toString() match {
       case "number" => Numeric
