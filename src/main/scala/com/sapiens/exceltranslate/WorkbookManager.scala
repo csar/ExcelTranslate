@@ -153,14 +153,18 @@ class WorkbookManager(id:String, config: Config) extends Actor with ActorLogging
       work enqueue Tuple2(sender(),e)
       self ! Dequeue
   }
+
+  var closeWhenDone = false
   def dieIfEventRelevant(we:WatchEvent[Path]) :Unit = {
     // check if this was in in our candidate list
     val path = new File(excelDir,we.context().toString).getCanonicalPath
     if(files.contains(path)) {
       context.parent ! id
       log.info(s"Detected ${we.kind()} on $path, terminating current instance for $id")
-      // die and free resources
-      self ! PoisonPill
+      // free resources and die
+      closeWhenDone =  true
+      if (workers.isEmpty) self ! PoisonPill
+      else workers.keys.foreach( _ ! PoisonPill)
     }
   }
   def failure(exception: Throwable): Receive = {
@@ -200,6 +204,7 @@ class WorkbookManager(id:String, config: Config) extends Actor with ActorLogging
         case Terminating =>
           log.info(s"Instance $id terminated current #workers=${workers.size}")
           workers -= sender()
+          if (closeWhenDone && workers.isEmpty) self ! PoisonPill
         case Ready =>
           if (workers(sender())==WorkerState.New) log.info(s"Instance $id ready current #workers=${workers.size}")
           workers += sender() -> state

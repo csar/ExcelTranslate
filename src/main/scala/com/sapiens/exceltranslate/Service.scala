@@ -46,8 +46,12 @@ object Service extends App {
       var key:Option[WatchKey] = None
       do {
         key = Option(watch.poll())
-        for( polled <- key; event <- polled.pollEvents().asScala ) {
-          handler ! event
+        for( polled <- key){
+          for(event <- polled.pollEvents().asScala ) {
+            log.debug(s"received ${event.kind()} for ${event.context()}")
+            handler ! event
+          }
+          polled.reset()
         }
 
       } while (key.isDefined)

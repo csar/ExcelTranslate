@@ -25,7 +25,7 @@ object BindingFactory {
       val row = formulaIO.getRow(line)
       if (row != null && row.getCell(3)!=null && row.getCell(3).getCellType != BLANK) {
 
-        val appendTo = if (Try(row.getCell(1).getBooleanCellValue).getOrElse(true)) input else output
+        val appendTo = if (Try(row.getCell(1).getBooleanCellValue).recoverWith{case _ => Try(!row.getCell(1).getStringCellValue.equalsIgnoreCase("output"))}.getOrElse(true)) input else output
         val root = row.getCell(3)
         val cr = root.getCellType match {
           case STRING =>
