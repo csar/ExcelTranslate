@@ -1,6 +1,7 @@
 package com.sapiens.exceltranslate
 
 import java.io.File
+import java.nio.file.{Paths, WatchEvent}
 import java.util.concurrent.TimeUnit
 
 import akka.pattern.{ask, pipe}
@@ -47,6 +48,11 @@ class MessageHandler(timeout: Timeout, sheets:Config) extends Actor with ActorLo
       s"KO$separator${e.getMessage}"
    }
    def receive:Receive = {
+     case wbName:String =>
+       log.info(s"Disassociated $wbName from handler")
+       workbooks -= wbName
+     case we: WatchEvent[_] =>
+       workbooks.values.foreach(_ ! we)
      case t:TextMessage  =>
        val (cmd,sheet,params) = split(t.getText)
        try {

@@ -1,6 +1,7 @@
 package com.sapiens.exceltranslate
 
 import java.io.{File, FileInputStream}
+import java.nio.file.{Path, Paths, WatchEvent}
 import java.util.concurrent.TimeUnit
 
 import akka.actor.{Actor, ActorLogging, ActorRef, PoisonPill, Props, Stash, Status}
@@ -26,9 +27,10 @@ case object Dequeue
 case object CheckRemove
 
 class WorkbookManager(id:String, config: Config) extends Actor with ActorLogging  {
+  val excelDir = new File(Service.config.getString("excelDir"))
   implicit val ec = context.dispatcher
   var io :InputOutput=_
-  var file:String = _
+  var files = List.empty[String]
   var workers = Map.empty[ActorRef, WorkerState.WorkerState]
   val work = new mutable.Queue[(ActorRef,Action)]
   var metas = List.empty[(ActorRef,Action)]
@@ -40,20 +42,22 @@ class WorkbookManager(id:String, config: Config) extends Actor with ActorLogging
 
   def newWorkbook = Future {
     blocking {
+      val file = files.head
       log.debug(s"Loading $file as workbook")
      WorkbookFactory.create(new FileInputStream(file))
     }
   }
+  var pathsToWatch = List.empty[Path]
   def createInstance(wbf:Future[Workbook] = newWorkbook, output:Seq[Variable]=io.output):Unit = {
     log.info(s"Creating WorkbookInstance $id current #workers=${workers.size}")
     workers += context.actorOf(Props(classOf[WorkbookInstance],id,  wbf, output)) -> WorkerState.New
   }
 
   def init(candidates:List[String]) : Future[InputOutput] = if (candidates.isEmpty) Future.failed(new RuntimeException(s"Couldn't locate or load workbook for formula $id")) else {
-    file = candidates.head
+    files ::= candidates.head
     newWorkbook map { workbook=>
       io = Try(InputOutput.fromConfig(workbook)(config.getConfig("binding"))) getOrElse  {
-        BindingFactory(workbook, file,"")
+        BindingFactory(workbook, files.head,"")
       }
       createInstance(Future successful workbook, io.output)
       for( (ref, action) <- metas.reverse) {
@@ -63,14 +67,13 @@ class WorkbookManager(id:String, config: Config) extends Actor with ActorLogging
 
     } recoverWith {
       case NonFatal(_) =>
-        val msg = s"Loading of $file failed for formula $id"
+        val msg = s"Loading of ${files.head} failed for formula $id"
         log.warning(msg)
         init(candidates.tail)
     }
   }
   override def preStart(): Unit = {
     // make the first Workbook instance to capture the IO definition
-    val excelDir =  new File(Service.config.getString("excelDir"))
     val candidates = Try(config.getString("file")).map(new File(excelDir , _).getCanonicalPath).map(List(_)).getOrElse {
       log.info(s"No config $id, checking in excelDir=$excelDir")
       excelDir.listFiles().filter(_.isFile).filter { file =>
@@ -83,7 +86,6 @@ class WorkbookManager(id:String, config: Config) extends Actor with ActorLogging
         context become ready(io).orElse(workermanagement)
         replay
       case Failure(exception) =>
-        file = null
         context become failure(exception )
         replay
     }
@@ -101,6 +103,9 @@ class WorkbookManager(id:String, config: Config) extends Actor with ActorLogging
   val creationDamping = Try(config.getDouble("creationDamping")) getOrElse 1.0
   val keepMin = Try(config.getInt("keepMin")) getOrElse 1
   def ready(io:InputOutput): Receive = {
+    case we:WatchEvent[Path]  @unchecked =>
+      dieIfEventRelevant(we)
+
     case Dequeue if work.nonEmpty =>
       val ready = workers.filter(_._2==WorkerState.Ready).keys.iterator
       while(work.nonEmpty && ready.nonEmpty)
@@ -148,7 +153,20 @@ class WorkbookManager(id:String, config: Config) extends Actor with ActorLogging
       work enqueue Tuple2(sender(),e)
       self ! Dequeue
   }
+  def dieIfEventRelevant(we:WatchEvent[Path]) :Unit = {
+    // check if this was in in our candidate list
+    val path = new File(excelDir,we.context().toString).getCanonicalPath
+    if(files.contains(path)) {
+      context.parent ! id
+      log.info(s"Detected ${we.kind()} on $path, terminating current instance for $id")
+      // die and free resources
+      self ! PoisonPill
+    }
+  }
   def failure(exception: Throwable): Receive = {
+    case we:WatchEvent[Path]  @unchecked =>
+      dieIfEventRelevant(we)
+
     case _:Action =>
       sender() ! Status.Failure(exception)
     case Dequeue =>
@@ -162,6 +180,7 @@ class WorkbookManager(id:String, config: Config) extends Actor with ActorLogging
 
 
   def workermanagement:Receive = {
+
     case CheckRemove if workers.size>work.size && workers.size> keepMin=>
       workers.find(_._2==WorkerState.New) match {
         case Some((ref,_)) =>
