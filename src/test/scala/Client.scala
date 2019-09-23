@@ -63,6 +63,7 @@ object Client extends App {
 
 
   def call(string: String) = {
+    println("call",string.replace(MessageHandler.separator, '|'))
     val msg = sess.createTextMessage(string)
     msg.setJMSReplyTo(reply)
     correlationID.foreach(msg.setJMSCorrelationID)
@@ -73,12 +74,18 @@ object Client extends App {
   }
 
 
-
+  // use example.xlsx
+  {
+    val formula = "example"
+    println(call(s"iarr\u0006$formula"))
+    println(call(s"oarr\u0006$formula"))
+    println(call(s"calc\u0006${formula}\u00064\u00061\u00062\u00063\u00064\u00065\u00066\u00067\u00068\u00069\u000610\u000611\u0006"))
+   System.exit(1)
+  }
 
   val formula = "Annuity calc JL"
 
   import com.sapiens.exceltranslate.separator
-  println(call("iarr\u0006CTRY_DIA_Life_Annuity_calc"))
   println(call("calc\u0006CTRY_DIA_Life_Annuity_calc\u000614\u0006120000.000000\u000612.000000\u000610.000000\u000640.000000\u00060.000000\u00061.000000\u00060.000000\u00060.000000\u00060.037500\u00061.000000\u00061.000000\u00061.000000\u00060.000000\u00061.000000\u0006 ")
   )
 
