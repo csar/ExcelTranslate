@@ -170,7 +170,7 @@ sheets {
 ```
 
 #### FormulaIO sheet
-The binding definition can integrated into the workbook by simply adding a sheet "FormulaIO". See  [example.xlsx](/) for a functioning template on how to use the binding for matrix and scalar inputs and outputs.
+The binding definition can integrated into the workbook by simply adding a sheet "FormulaIO". See  `example.xlsx` for a functioning template on how to use the binding for matrix and scalar inputs and outputs.
 Input and Outputs are listed in their intended order.
 
 |Column|Semantics|
