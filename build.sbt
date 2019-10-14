@@ -1,6 +1,6 @@
 name := "ExcelTranslate"
 
-version := "0.4"
+version := "0.5"
 maintainer := "carsten.saager@sapiens.org"
 scalaVersion := "2.13.0"
 
@@ -14,6 +14,14 @@ enablePlugins(JavaAppPackaging, DockerPlugin)
 
 
 mainClass in Compile := Some("com.sapiens.exceltranslate.Service")
+
+lazy val akkaHttpVersion = "10.1.10"
+lazy val akkaVersion = "2.5.25"
+libraryDependencies += "com.typesafe.akka" %% "akka-http" % akkaHttpVersion
+
+libraryDependencies += "com.typesafe.akka" %% "akka-http-spray-json" % akkaHttpVersion
+
+libraryDependencies += "com.typesafe.akka" %% "akka-stream" % akkaVersion
 
 libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2"
 // https://mvnrepository.com/artifact/org.apache.poi/poi-ooxml
@@ -36,7 +44,7 @@ libraryDependencies += "com.typesafe" % "config" % "1.3.4"
 libraryDependencies += "org.apache.activemq" % "activemq-broker" % "5.15.9"
 
 // https://mvnrepository.com/artifact/com.typesafe.akka/akka-actor
-libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.5.23"
+libraryDependencies += "com.typesafe.akka" %% "akka-actor" % akkaVersion
 
 // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.3"

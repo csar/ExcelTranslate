@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/ExcelTranslate.iml" filepath="$PROJECT_DIR$/.idea/modules/ExcelTranslate.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/ExcelTranslate-build.iml" filepath="$PROJECT_DIR$/.idea/modules/ExcelTranslate-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/exceltranslate.iml" filepath="$PROJECT_DIR$/.idea/modules/exceltranslate.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/exceltranslate-build.iml" filepath="$PROJECT_DIR$/.idea/modules/exceltranslate-build.iml" />
     </modules>
   </component>
 </project>

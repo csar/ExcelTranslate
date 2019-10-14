@@ -2,6 +2,14 @@ package com.sapiens.exceltranslate
 
 import org.apache.poi.ss.usermodel.CellType
 
+object DataType {
+  def apply(id:Int) =  id match {
+    case 1 => Numeric
+    case 2 => Bool
+    case 3 => DateType
+    case _ => Alpha
+  }
+}
 sealed trait DataType {
   def cellType: CellType
   def id:Int

@@ -41,13 +41,14 @@ object Listener {
   import Transports._
   import com.ibm.msg.client.jms.JmsConstants._
 
-  def transport(config: Config) = if (Try(config.getValue("channel")).isSuccess) WebSphereMQ else ActiveMQ
+  def transport(config: Config) = if (Try(config.getValue("channel")).isSuccess) WebSphereMQ else if (Try(config.getValue("port")).isSuccess) REST else ActiveMQ
 
   implicit val mqscf = JmsFactoryFactory.getInstance(WMQ_PROVIDER)
 
   def apply(config: Config)(implicit ec: ExecutionContext, timeout: Timeout): Listener = transport(config) match {
     case WebSphereMQ => new MqsListener(config)
     case ActiveMQ => new AmqListener(config)
+    case REST => new HttpListener(config)
   }
 
 
@@ -56,5 +57,5 @@ object Listener {
 
 object Transports extends Enumeration {
   type Transport = Value
-  val Unknown, ActiveMQ, WebSphereMQ = Value
+  val Unknown, ActiveMQ, WebSphereMQ, REST = Value
 }

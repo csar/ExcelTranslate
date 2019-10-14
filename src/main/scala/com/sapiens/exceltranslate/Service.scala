@@ -20,7 +20,7 @@ import scala.util.Try
 object Service extends App {
   val log = LoggerFactory.getLogger(getClass)
   args.headOption.foreach(System.setProperty("config.file", _))
-  val system = ActorSystem("calc")
+  implicit val system = ActorSystem("calc")
   implicit val ec = system.dispatcher
   val config = ConfigFactory.load()
 
