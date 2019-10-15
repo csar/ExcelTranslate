@@ -1,6 +1,6 @@
-name := "ExcelTranslate"
+name := "EaaS"
 
-version := "0.7"
+version := "0.8"
 maintainer := "carsten.saager@sapiens.org"
 scalaVersion := "2.13.0"
 
@@ -17,6 +17,7 @@ mainClass in Compile := Some("com.sapiens.exceltranslate.Service")
 
 lazy val akkaHttpVersion = "10.1.10"
 lazy val akkaVersion = "2.5.25"
+
 libraryDependencies += "com.typesafe.akka" %% "akka-http" % akkaHttpVersion
 
 libraryDependencies += "com.typesafe.akka" %% "akka-http-spray-json" % akkaHttpVersion
@@ -24,9 +25,9 @@ libraryDependencies += "com.typesafe.akka" %% "akka-http-spray-json" % akkaHttpV
 libraryDependencies += "com.typesafe.akka" %% "akka-stream" % akkaVersion
 
 libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2"
+
 // https://mvnrepository.com/artifact/org.apache.poi/poi-ooxml
 libraryDependencies += "org.apache.poi" % "poi-ooxml" % "4.1.0"
-
 
 // https://mvnrepository.com/artifact/org.scala-lang.modules/scala-xml
 libraryDependencies += "org.scala-lang.modules" %% "scala-xml" % "1.2.0"
@@ -66,7 +67,7 @@ dockerBaseImage := "openjdk:jre-alpine"
 
 daemonUser in Docker := "extrans"
 
-// I think we only need it if the app runs the MQ itself
+// I think we only need it if the app runs the MQ itself or we expose a REST listener
 dockerExposedPorts:=Seq(61616)
 
 //dockerEntrypoint:=Seq("/opt/docker/bin/exceltranslate")

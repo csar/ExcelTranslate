@@ -43,17 +43,17 @@ object JsonFormats extends SprayJsonSupport with DefaultJsonProtocol{
 }
 
 
-case class Value(`type` : Option[DataType], number:Option[Array[BigDecimal]], bool:Option[Array[Boolean]], string:Option[Array[String]]) {
+case class Value(`type` : Option[DataType], number:Option[Array[Option[BigDecimal]]], bool:Option[Array[Boolean]], string:Option[Array[String]]) {
   def tokens:Seq[String] = `type` match {
     case Some(dt) => dt match {
       case Alpha => string.get
       case Bool => bool.get.map(_.toString)
-      case Numeric => number.get.map(_.toString)
+      case Numeric => number.get.map(_.map(_.toString).getOrElse(""))
 
     }
     case None =>
       if (bool.isDefined ) bool.get.map(_.toString)
-      else if (number.isDefined) number.get.map(_.toString)
+      else if (number.isDefined) number.get.map(_.map(_.toString).getOrElse(""))
       else string.get
   }
 }

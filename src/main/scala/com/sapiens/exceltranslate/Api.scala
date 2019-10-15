@@ -97,9 +97,10 @@ class Api(apikeys:Option[java.util.List[String]])(implicit val timeout:Timeout, 
         for ( c <-  0 until tokens(1).toInt) yield {
           val size = tokens(offset+4).toInt*tokens(offset+3).toInt
           val dt = DataType(tokens(offset+2).toInt)
-          val data =  tokens.slice(offset+5, offset+5+size)
+          var data =  tokens.slice(offset+5, offset+5+size)
+          while (data.size<size) data = data.appended("") // handle trailing empty value
           offset += 5+size
-          Value(Some(dt), if (dt == Numeric) Some(data.map(BigDecimal(_))) else None,
+          Value(Some(dt), if (dt == Numeric) Some(data.map(str => Try(BigDecimal(str)).toOption)) else None,
             if (dt == Bool) Some(data.map(_=="1")) else None,
             if (dt == Alpha) Some(data) else None)
         }
