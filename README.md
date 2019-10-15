@@ -115,6 +115,7 @@ REST {
 ````
 
 The `apikeys` arrays list the allowed `Authorization:token <apikey>` to access the REST interface. If `apikeys` is absent or empty, no authorization is required.
+
 See the [HOCON](https://github.com/lightbend/config#optional-system-or-env-variable-overrides) documentation on how to use environment variables to simplify managed deployments
 ### Sheet configuration
 As long as the file names match the formula id, no configuration is required besides the `excelDir`.

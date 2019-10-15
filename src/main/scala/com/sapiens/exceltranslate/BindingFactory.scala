@@ -38,7 +38,7 @@ object BindingFactory {
             if (Try(row.getCell(2).getStringCellValue == "date").getOrElse(false)) DateType else Numeric
           case Success(STRING) => Alpha
           case Success(BOOLEAN) => Bool
-          case _ => row.getCell(2).getStringCellValue match {
+          case _ => row.getCell(2).getStringCellValue.toLowerCase match {
             case "date" => DateType
             case "number" => Numeric
             case "string" => Alpha
@@ -107,8 +107,8 @@ object BindingFactory {
          InputOutput(extractVariables(wb, params \ "Input"), extractVariables(wb, params \ "Output"))
        } catch {
          case NonFatal(e) =>
-           System.err.println(s"No bindings found and sheet and no valid xml definition found!")
-           System.exit(1).asInstanceOf[Nothing]
+           System.err.println(s"No bindings found and sheet and no valid xml definition found!", e)
+           throw e
        }
      } else {
        try {
