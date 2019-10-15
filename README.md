@@ -190,6 +190,58 @@ Adding
 
 to the config will install a WatchService on `excelDir` that will invalidate running instances so that they can reload and make sure that only one revision is used in the computations.
 
+###REST
+Since 0.5.0 there is a simple REST interface. There are three GET methods exposed
+#1 `/api/<Formala>/input` to retrieve the input definition
+#2 `/api/<Formala>/output` to retrieve the output definition
+#3 `/api/<Formala>/calculate` to send input and receive the results
+
+Input and Output return the array of the Bind objects:
+```
+[
+  {
+    "cols": 1,
+    "name": "vector",
+    "ordinal": 1,
+    "rows": 3,
+    "type": "number"
+  },
+  {
+    "cols": 1,
+    "name": "sum",
+    "ordinal": 2,
+    "rows": 1,
+    "type": "number"
+  }
+]
+```
+`type` can be `number`, `string`, `bool` or `date`. This is relevant on how the array of Value objects will be represented in the IO
+of the `calculate` method:
+```
+[
+  {
+    "number": [
+      -8.0,
+      0.0,
+      42.0
+    ],
+    "type": "number"
+  },
+  {
+    "number": [
+      38.0
+    ],
+    "type": "number"
+  }
+]
+```
+As `type` is optional, only one  of `string`, `bool` or `date` should be specified (There will be more eleborated rules in the future).
+Not that calls to the `calculate` method must include the header value `Content-Type:application/json`.
+
+Analog to the queue interface above, the order in the arrays for Values in `calculate` correspond to the Bind arrays in `input` and
+`output` respictively.
+
+
 ### Logging
 For production it is recommended to set the Akka log level
 
