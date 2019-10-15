@@ -104,6 +104,17 @@ listener {
 So the server will be able to connect to ActiveMQ and WebSphereMQ at once and share resources between them. The preferred way to define the listener object is via the name of the
 configuration, this avoids initialization problems when substitutions are used.
 
+#### REST Listener
+
+```` 
+REST {
+  bind = "0.0.0.0"
+  port = 8099
+  apikeys = [abcdefabcdefabcdef,tzuiotzuiotzuio]
+}
+````
+
+The `apikeys` arrays list the allowed `Authorization:token <apikey>` to access the REST interface. If `apikeys` is absent or empty, no authorization is required.
 See the [HOCON](https://github.com/lightbend/config#optional-system-or-env-variable-overrides) documentation on how to use environment variables to simplify managed deployments
 ### Sheet configuration
 As long as the file names match the formula id, no configuration is required besides the `excelDir`.
@@ -190,8 +201,8 @@ Adding
 
 to the config will install a WatchService on `excelDir` that will invalidate running instances so that they can reload and make sure that only one revision is used in the computations.
 
-###REST
-Since 0.5.0 there is a simple REST interface. There are three GET methods exposed
+### REST
+Since 0.6 there is a simple REST interface. There are three GET methods exposed
 #1 `/api/<Formala>/input` to retrieve the input definition
 #2 `/api/<Formala>/output` to retrieve the output definition
 #3 `/api/<Formala>/calculate` to send input and receive the results
